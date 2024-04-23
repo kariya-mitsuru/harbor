@@ -13,7 +13,7 @@ set -e
 
 # the temp folder to store binary file...
 mkdir -p binary
-rm -rf binary/registry || true
+rm -rf binary/*
 
 cd `dirname $0`
 cur=$PWD
@@ -26,17 +26,20 @@ git clone -b $VERSION https://github.com/distribution/distribution.git $TEMP
 cd $TEMP
 git apply $cur/redis.patch
 cd $cur
-
-echo 'build the registry binary ...'
 cp Dockerfile.binary $TEMP
-docker build -f $TEMP/Dockerfile.binary -t registry-golang $TEMP
 
-echo 'copy the registry binary to local...'
-ID=$(docker create registry-golang)
-docker cp $ID:/go/src/github.com/docker/distribution/bin/registry binary/registry
+for arch in amd64 arm64; do
+	echo 'build the registry binary ...'
+	docker build -f $TEMP/Dockerfile.binary -t registry-golang --build-arg GOARCH=$arch $TEMP
 
-docker rm -f $ID
-docker rmi -f registry-golang
+	echo 'copy the registry binary to local...'
+	ID=$(docker create registry-golang)
+	mkdir binary/$arch
+	docker cp $ID:/go/src/github.com/docker/distribution/bin/registry binary/$arch/registry
+
+	docker rm -f $ID
+	docker rmi -f registry-golang
+done
 
 echo "Build registry binary success, then to build photon image..."
 cd $cur

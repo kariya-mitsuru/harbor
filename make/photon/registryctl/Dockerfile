@@ -1,11 +1,12 @@
 ARG harbor_base_image_version
 ARG harbor_base_namespace
 FROM ${harbor_base_namespace}/harbor-registryctl-base:${harbor_base_image_version}
+ARG TARGETARCH
 
 COPY ./make/photon/common/install_cert.sh /home/harbor
-COPY ./make/photon/registry/binary/registry /usr/bin/registry_DO_NOT_USE_GC
+COPY ./make/photon/registry/binary/$TARGETARCH/registry /usr/bin/registry_DO_NOT_USE_GC
 COPY ./make/photon/registryctl/start.sh /home/harbor
-COPY ./make/photon/registryctl/harbor_registryctl /home/harbor
+COPY ./make/photon/registryctl/$TARGETARCH/harbor_registryctl /home/harbor
 
 RUN chown -R harbor:harbor /etc/pki/tls/certs \
     && chown harbor:harbor /home/harbor/harbor_registryctl && chmod u+x /home/harbor/harbor_registryctl \

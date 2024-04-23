@@ -2,17 +2,16 @@ ARG build_image
 ARG harbor_base_image_version
 ARG harbor_base_namespace
 
-FROM ${build_image} AS build
+FROM --platform=$BUILDPLATFORM ${build_image} AS build
 
-ENV CGO_ENABLED=0
-ENV GOOS=linux
-ENV GOARCH=amd64
+ARG TARGETOS
+ARG TARGETARCH
 
 COPY src /harbor/src
 WORKDIR /harbor/src/cmd/exporter
-RUN go build -o /out/harbor_exporter
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /out/harbor_exporter
 
-FROM ${harbor_base_namespace}/harbor-exporter-base:${harbor_base_image_version}
+FROM --platform=$TARGETPLATFORM ${harbor_base_namespace}/harbor-exporter-base:${harbor_base_image_version}
 
 COPY --from=build /out/harbor_exporter /harbor/harbor_exporter
 COPY ./make/photon/exporter/entrypoint.sh ./make/photon/common/install_cert.sh /harbor/

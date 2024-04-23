@@ -3,11 +3,12 @@ ARG harbor_base_namespace
 FROM ${harbor_base_namespace}/harbor-trivy-adapter-base:${harbor_base_image_version}
 
 ARG trivy_version
+ARG TARGETARCH
 
 COPY ./make/photon/common/install_cert.sh /home/scanner
 COPY ./make/photon/trivy-adapter/entrypoint.sh /home/scanner
-COPY ./make/photon/trivy-adapter/binary/trivy /usr/local/bin/trivy
-COPY ./make/photon/trivy-adapter/binary/scanner-trivy /home/scanner/bin/scanner-trivy
+COPY ./make/photon/trivy-adapter/binary/$TARGETARCH/trivy /usr/local/bin/trivy
+COPY ./make/photon/trivy-adapter/binary/$TARGETARCH/scanner-trivy /home/scanner/bin/scanner-trivy
 
 
 RUN chown -R scanner:scanner /etc/pki/tls/certs \
