@@ -2,11 +2,13 @@ ARG build_image
 ARG harbor_base_image_version
 ARG harbor_base_namespace
 
-FROM ${build_image} AS build
+FROM --platform=$BUILDPLATFORM ${build_image} AS build
+
+ARG TARGETARCH
 
 COPY --link src /harbor/src
 WORKDIR /harbor/src/cmd/exporter
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /out/harbor_exporter
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARCH go build -o /out/harbor_exporter
 
 FROM ${harbor_base_namespace}/harbor-exporter-base:${harbor_base_image_version}
 
