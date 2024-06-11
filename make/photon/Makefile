@@ -16,6 +16,7 @@ TIMESTAMP=$(shell date +"%Y%m%d")
 DOCKERCMD=$(shell which docker)
 DOCKERBUILD=$(DOCKERCMD) build --no-cache
 DOCKERBUILD_WITH_PULL_PARA=$(DOCKERBUILD) --pull=$(PULL_BASE_FROM_DOCKERHUB)
+DOCKERBUILD_WITH_BUILD_ARGS=$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE)
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 
 # pushimage
@@ -92,37 +93,37 @@ DOCKERIMAGENAME_EXPORTER=$(IMAGENAMESPACE)/harbor-$(EXPORTER)
 _build_prepare:
 	@$(call _build_base,$(PREPARE),$(DOCKERFILEPATH_PREPARE))
 	@echo "building prepare container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_PREPARE)/$(DOCKERFILENAME_PREPARE) -t $(DOCKERIMAGENAME_PREPARE):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_BUILD_ARGS) -f $(DOCKERFILEPATH_PREPARE)/$(DOCKERFILENAME_PREPARE) -t $(DOCKERIMAGENAME_PREPARE):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_db:
 	@$(call _build_base,$(DB),$(DOCKERFILEPATH_DB))
 	@echo "building db container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_BUILD_ARGS) -f $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_portal:
 	@$(call _build_base,$(PORTAL),$(DOCKERFILEPATH_PORTAL))
 	@echo "building portal container for photon..."
-	$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg npm_registry=$(NPM_REGISTRY) -f $(DOCKERFILEPATH_PORTAL)/$(DOCKERFILENAME_PORTAL) -t $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) .
+	$(DOCKERBUILD_WITH_BUILD_ARGS) --build-arg npm_registry=$(NPM_REGISTRY) -f $(DOCKERFILEPATH_PORTAL)/$(DOCKERFILENAME_PORTAL) -t $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_core:
 	@$(call _build_base,$(CORE),$(DOCKERFILEPATH_CORE))
 	@echo "building core container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_CORE)/$(DOCKERFILENAME_CORE) -t $(DOCKERIMAGENAME_CORE):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_BUILD_ARGS) -f $(DOCKERFILEPATH_CORE)/$(DOCKERFILENAME_CORE) -t $(DOCKERIMAGENAME_CORE):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_jobservice:
 	@$(call _build_base,$(JOBSERVICE),$(DOCKERFILEPATH_JOBSERVICE))
 	@echo "building jobservice container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_JOBSERVICE)/$(DOCKERFILENAME_JOBSERVICE) -t $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_BUILD_ARGS) -f $(DOCKERFILEPATH_JOBSERVICE)/$(DOCKERFILENAME_JOBSERVICE) -t $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_log:
 	@$(call _build_base,$(LOG),$(DOCKERFILEPATH_LOG))
 	@echo "building log container for photon..."
-	$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_LOG)/$(DOCKERFILENAME_LOG) -t $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) .
+	$(DOCKERBUILD_WITH_BUILD_ARGS) -f $(DOCKERFILEPATH_LOG)/$(DOCKERFILENAME_LOG) -t $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_trivy_adapter:
@@ -139,8 +140,7 @@ _build_trivy_adapter:
 			$(DOCKERFILEPATH_TRIVY_ADAPTER)/builder.sh $(TRIVYADAPTERVERSION) ; \
 		fi ; \
 		echo "Building Trivy adapter container for photon..." ; \
-		$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) \
-			--build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) \
+		$(DOCKERBUILD_WITH_BUILD_ARGS) \
 			--build-arg trivy_version=$(TRIVYVERSION) \
 			-f $(DOCKERFILEPATH_TRIVY_ADAPTER)/$(DOCKERFILENAME_TRIVY_ADAPTER) \
 			-t $(DOCKERIMAGENAME_TRIVY_ADAPTER):$(VERSIONTAG) . ; \
@@ -151,7 +151,7 @@ _build_trivy_adapter:
 _build_nginx:
 	@$(call _build_base,$(NGINX),$(DOCKERFILEPATH_NGINX))
 	@echo "building nginx container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_NGINX)/$(DOCKERFILENAME_NGINX) -t $(DOCKERIMAGENAME_NGINX):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_BUILD_ARGS) -f $(DOCKERFILEPATH_NGINX)/$(DOCKERFILENAME_NGINX) -t $(DOCKERIMAGENAME_NGINX):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_registry:
@@ -163,31 +163,31 @@ _build_registry:
 		$(DOCKERFILEPATH_REG)/builder $(REGISTRY_SRC_TAG) $(DISTRIBUTION_SRC) ; \
 	fi
 	@echo "building registry container for photon..."
-	@chmod 655 $(DOCKERFILEPATH_REG)/binary/registry && $(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_REG)/$(DOCKERFILENAME_REG) -t $(DOCKERIMAGENAME_REG):$(VERSIONTAG) .
+	@chmod 655 $(DOCKERFILEPATH_REG)/binary/registry && $(DOCKERBUILD_WITH_BUILD_ARGS) -f $(DOCKERFILEPATH_REG)/$(DOCKERFILENAME_REG) -t $(DOCKERIMAGENAME_REG):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_registryctl:
 	@$(call _build_base,$(REGISTRYCTL),$(DOCKERFILEPATH_REGISTRYCTL))
 	@echo "building registry controller for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_REGISTRYCTL)/$(DOCKERFILENAME_REGISTRYCTL) -t $(DOCKERIMAGENAME_REGISTRYCTL):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_BUILD_ARGS) -f $(DOCKERFILEPATH_REGISTRYCTL)/$(DOCKERFILENAME_REGISTRYCTL) -t $(DOCKERIMAGENAME_REGISTRYCTL):$(VERSIONTAG) .
 	@rm -rf $(DOCKERFILEPATH_REG)/binary
 	@echo "Done."
 
 _build_redis:
 	@$(call _build_base,$(REDIS),$(DOCKERFILEPATH_REDIS))
 	@echo "building redis container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) -t $(DOCKERIMAGENAME_REDIS):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_BUILD_ARGS) -f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) -t $(DOCKERIMAGENAME_REDIS):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_standalone_db_migrator:
 	@echo "building standalone db migrator image for photon..."
-	$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_STANDALONE_DB_MIGRATOR)/$(DOCKERFILENAME_STANDALONE_DB_MIGRATOR) -t $(DOCKERIMAGENAME_STANDALONE_DB_MIGRATOR):$(VERSIONTAG) .
+	$(DOCKERBUILD_WITH_BUILD_ARGS) -f $(DOCKERFILEPATH_STANDALONE_DB_MIGRATOR)/$(DOCKERFILENAME_STANDALONE_DB_MIGRATOR) -t $(DOCKERIMAGENAME_STANDALONE_DB_MIGRATOR):$(VERSIONTAG) .
 	@echo "Done."
 
 _compile_and_build_exporter:
 	@$(call _build_base,$(EXPORTER),$(DOCKERFILEPATH_EXPORTER))
 	@echo "compiling and building image for exporter..."
-	@$(DOCKERCMD) build --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg build_image=$(GOBUILDIMAGE) -f ${DOCKERFILEPATH_EXPORTER}/${DOCKERFILENAME_EXPORTER} -t $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_BUILD_ARGS) --build-arg build_image=$(GOBUILDIMAGE) -f ${DOCKERFILEPATH_EXPORTER}/${DOCKERFILENAME_EXPORTER} -t $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) .
 	@echo "Done."
 
 define _extract_archive
