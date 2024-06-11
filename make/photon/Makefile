@@ -16,7 +16,7 @@ TIMESTAMP=$(shell date +"%Y%m%d")
 DOCKERCMD=$(shell which docker)
 DOCKERBUILD=$(DOCKERCMD) buildx build --no-cache
 DOCKERBUILD_WITH_PULL_PARA=$(DOCKERBUILD) --pull=$(PULL_BASE_FROM_DOCKERHUB)
-DOCKERBUILD_WITH_BUILD_ARGS=$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE)
+DOCKERBUILD_WITH_BUILD_ARGS=$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --platform linux/amd64,linux/arm64 --push --annotation org.opencontainers.image.source=https://github.com/$(REGISTRYUSER)/harbor
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 
 # photon dockerfile
