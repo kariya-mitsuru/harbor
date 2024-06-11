@@ -17,7 +17,7 @@ DISTRIBUTION_SRC="$2"
 
 # the temp folder to store binary file...
 mkdir -p binary
-rm -rf binary/registry || true
+rm -rf binary/* || true
 
 cd `dirname $0`
 
@@ -31,7 +31,9 @@ git apply ~-/redis.patch
 cd -
 
 echo 'build the registry binary ...'
-docker build -f Dockerfile.binary -o binary/ $TEMP
+for arch in amd64 arm64; do
+	docker build -f Dockerfile.binary --build-arg GOARCH=$arch -o binary/$arch/ $TEMP
+done
 
 echo "Build registry binary success, then to build photon image..."
 cp $TEMP/cmd/registry/config-example.yml config.yml
