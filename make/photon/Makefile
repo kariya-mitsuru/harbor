@@ -19,10 +19,6 @@ DOCKERBUILD_WITH_PULL_PARA=$(DOCKERBUILD) --pull=$(PULL_BASE_FROM_DOCKERHUB)
 DOCKERBUILD_WITH_BUILD_ARGS=$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE)
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 
-# pushimage
-PUSHSCRIPTPATH=$(MAKEPATH)
-PUSHSCRIPTNAME=pushimage.sh
-
 # photon dockerfile
 DOCKERFILEPATH=$(MAKEPATH)/photon
 
@@ -199,10 +195,7 @@ endef
 define _build_base
 	if [ "$(BUILD_BASE)" = "true" ] ; then \
 		echo "building base image for $(1)...";\
-		$(DOCKERBUILD) -f $(2)/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
-		if [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
-			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) dummyuser dummypassword dummyregistry $(PULL_BASE_FROM_DOCKERHUB) || exit 1; \
-		fi ; \
+		$(DOCKERBUILD) -f $(2)/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) --platform linux/amd64,linux/arm64 --push --annotation org.opencontainers.image.source=https://github.com/$(REGISTRYUSER)/harbor . ;\
 	fi
 endef
 
