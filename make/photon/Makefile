@@ -129,16 +129,12 @@ _build_log:
 _build_trivy_adapter:
 	@if [ "$(TRIVYFLAG)" = "true" ] ; then \
 		$(call _build_base,$(TRIVY_ADAPTER),$(DOCKERFILEPATH_TRIVY_ADAPTER)) ; \
-		rm -rf $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary && mkdir -p $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary ; \
+		rm -rf $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary && mkdir -p $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/{amd,arm}64 ; \
 		echo "Downloading Trivy scanner $(TRIVYVERSION)..." ; \
-		$(call _extract_archive, $(TRIVY_DOWNLOAD_URL), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
-		if [ "$(BUILDBIN)" != "true" ] ; then \
-			echo "Downloading Trivy adapter $(TRIVYADAPTERVERSION)..." ; \
-			$(call _extract_archive, $(TRIVY_ADAPTER_DOWNLOAD_URL), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
-		else \
-			echo "Building Trivy adapter $(TRIVYADAPTERVERSION) from sources..." ; \
-			$(DOCKERFILEPATH_TRIVY_ADAPTER)/builder.sh $(TRIVYADAPTERVERSION) ; \
-		fi ; \
+		$(call _extract_archive, $(subst ARCH,64bit,$(TRIVY_DOWNLOAD_URL)), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/amd64/) ; \
+		$(call _extract_archive, $(subst ARCH,ARM64,$(TRIVY_DOWNLOAD_URL)), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/arm64/) ; \
+		echo "Building Trivy adapter $(TRIVYADAPTERVERSION) from sources..." ; \
+		$(DOCKERFILEPATH_TRIVY_ADAPTER)/builder.sh $(TRIVYADAPTERVERSION) ; \
 		echo "Building Trivy adapter container for photon..." ; \
 		$(DOCKERBUILD_WITH_BUILD_ARGS) \
 			--build-arg trivy_version=$(TRIVYVERSION) \
