@@ -107,8 +107,7 @@ DISTRIBUTION_SRC=https://github.com/distribution/distribution.git
 
 # dependency binaries
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
-TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
-TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
+TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-ARCH.tar.gz
 
 define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
@@ -387,7 +386,7 @@ build:
 		BUILDBIN=$(BUILDBIN) TRIVYFLAG=$(TRIVYFLAG) \
 		NPM_REGISTRY=$(NPM_REGISTRY) BASEIMAGETAG=$(BASEIMAGETAG) IMAGENAMESPACE=$(IMAGENAMESPACE) BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
 		REGISTRYURL=$(REGISTRYURL) \
-		TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
+		TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) \
 		PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) BUILD_BASE=$(BUILD_BASE) \
 		PUSHBASEIMAGE=$(PUSHBASEIMAGE)
 	$(call logout)
