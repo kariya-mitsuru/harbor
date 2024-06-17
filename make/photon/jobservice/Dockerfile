@@ -1,10 +1,11 @@
 ARG harbor_base_image_version
 ARG harbor_base_namespace
 FROM ${harbor_base_namespace}/harbor-jobservice-base:${harbor_base_image_version}
+ARG TARGETARCH
 
 COPY --link --chown=10000:10000 --chmod=755 ./make/photon/common/install_cert.sh /harbor/
 COPY --link --chown=10000:10000 --chmod=744 ./make/photon/jobservice/entrypoint.sh /harbor/
-COPY --link --chown=10000:10000 --chmod=755 ./make/photon/jobservice/harbor_jobservice /harbor/
+COPY --link --chown=10000:10000 --chmod=755 ./make/photon/jobservice/binary/$TARGETARCH/harbor_jobservice /harbor/
 
 
 WORKDIR /harbor/
