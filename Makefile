@@ -337,7 +337,9 @@ compile_registryctl:
 
 compile_standalone_db_migrator:
 	@echo "compiling binary for standalone db migrator (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_STANDALONE_DB_MIGRATOR) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR)/$(STANDALONE_DB_MIGRATOR_BINARYNAME)
+	@for arch in amd64 arm64; do \
+		$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_STANDALONE_DB_MIGRATOR) -e GOARCH=$$arch $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR)/binary/$$arch/$(STANDALONE_DB_MIGRATOR_BINARYNAME); \
+	done
 	@echo "Done."
 
 compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl
