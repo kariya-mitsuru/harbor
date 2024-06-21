@@ -351,6 +351,20 @@ prepare: update_prepare_version
 	fi
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
+define login
+	@if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
+		docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) $(REGISTRYSERVER) ; \
+	else \
+		echo "No docker credentials provided, please be aware of privileges to access docker hub!" ; \
+	fi
+endef
+
+define logout
+	@if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
+		docker logout $(REGISTRYSERVER) ; \
+	fi
+endef
+
 build:
 # PUSHBASEIMAGE should not be true if BUILD_BASE is not true
 	@if [ "$(PULL_BASE_FROM_DOCKERHUB)" != "true" ] && [ "$(PULL_BASE_FROM_DOCKERHUB)" != "false" ] ; then \
@@ -365,6 +379,7 @@ build:
 		echo Should pull base images from registry in docker configuration since no base images built. ; \
 		exit 1; \
 	fi
+	$(call login)
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) GOBUILDIMAGE=$(GOBUILDIMAGE) \
 		REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG) DISTRIBUTION_SRC=$(DISTRIBUTION_SRC)\
 		TRIVYVERSION=$(TRIVYVERSION) TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) \
@@ -374,29 +389,28 @@ build:
 		REGISTRYURL=$(REGISTRYURL) \
 		TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
 		PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) BUILD_BASE=$(BUILD_BASE) \
-		REGISTRYUSER=$(REGISTRYUSER) REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
 		PUSHBASEIMAGE=$(PUSHBASEIMAGE)
+	$(call logout)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
+	$(call login)
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator \
 		VERSIONTAG=$(VERSIONTAG) \
 		BASEIMAGETAG=$(BASEIMAGETAG) IMAGENAMESPACE=$(IMAGENAMESPACE) BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
 		PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB)
+	$(call logout)
 
 build_base_docker:
-	if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
-		docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
-	else \
-		echo "No docker credentials provided, please make sure enough privileges to access docker hub!" ; \
-	fi
+	$(call login)
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		sleep 30 ; \
 		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
 		if [ "$(PUSHBASEIMAGE)" != "false" ] ; then \
-			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
+			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) dummyuser dummypassword dummyregistry $(PULL_BASE_FROM_DOCKERHUB) || exit 1; \
 		fi ; \
 	done
+	$(call logout)
 
 pull_base_docker:
 	@for name in $(BUILDBASETARGET); do \
