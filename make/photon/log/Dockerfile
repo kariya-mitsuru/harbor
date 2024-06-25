@@ -15,4 +15,4 @@ HEALTHCHECK CMD netstat -ltun|grep 10514
 
 VOLUME /var/log/docker/ /run/ /etc/logrotate.d/
 
-CMD /usr/local/bin/start.sh
+CMD ["/usr/local/bin/start.sh"]
