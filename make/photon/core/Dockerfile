@@ -14,4 +14,4 @@ COPY --link --chown=10000:10000 ./icons /harbor/icons
 WORKDIR /harbor/
 USER harbor
 ENTRYPOINT ["/harbor/entrypoint.sh"]
-COPY --link make/photon/prepare/versions /harbor/
+COPY --link --chmod=644 make/photon/prepare/versions /harbor/
